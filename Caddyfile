@@ -1,5 +1,5 @@
-# Production reverse proxy: serves the built SPAs from /srv/<app> and proxies the API.
-# Host names come from the environment: BLIZU_HOST, OTPORNO_HOST, NABAVA_HOST.
+# Production reverse proxy: serves the built SPA from /srv/nabavaradar and proxies the API.
+# The host name comes from the environment: NABAVA_HOST.
 # Caddy obtains TLS certificates automatically for public host names.
 #
 # CSP = the policy from the foundation spec plus two additions MapLibre needs:
@@ -38,14 +38,6 @@
 		try_files {path} /index.html
 		file_server
 	}
-}
-
-{$BLIZU_HOST} {
-	import spa blizu blizu-api
-}
-
-{$OTPORNO_HOST} {
-	import spa otporno otporno-api
 }
 
 {$NABAVA_HOST} {

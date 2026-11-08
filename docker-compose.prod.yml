@@ -1,28 +1,12 @@
-# Production stack: db, three APIs, one-shot SPA publishers and Caddy.
+# Birokratko production stack: PostgreSQL (PostGIS + pgvector), the API, a one-shot SPA publisher and Caddy (TLS).
 #   docker compose -f docker-compose.prod.yml --env-file .env up -d --build
-# Requires the app tasks to have added apps/<app>/api and apps/<app>/web (see infra/*.Dockerfile).
-name: datathon-2026-prod
-
-x-api: &api-defaults
-  restart: unless-stopped
-  depends_on:
-    db:
-      condition: service_healthy
-  environment: &api-env
-    ENV: prod
-    LOG_LEVEL: ${LOG_LEVEL:-INFO}
-    CONTACT_EMAIL: ${CONTACT_EMAIL:?set CONTACT_EMAIL in .env}
-    SMTP_HOST: ${SMTP_HOST:-}
-    SMTP_PORT: ${SMTP_PORT:-587}
-    SMTP_USER: ${SMTP_USER:-}
-    SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-    SMTP_FROM: ${SMTP_FROM:-}
-    GIT_SHA: ${GIT_SHA:-unknown}
+# Deployment guide: docs/DEPLOYMENT.md
+name: birokratko-prod
 
 services:
   db:
     build: ./infra/db
-    image: datathon-2026-db:prod
+    image: birokratko-db:prod
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
     volumes:
@@ -35,54 +19,31 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  blizu-api:
-    <<: *api-defaults
-    build:
-      context: .
-      dockerfile: infra/python-api.Dockerfile
-      args: { APP: blizu }
-    image: datathon-2026-blizu-api:prod
-    environment:
-      <<: *api-env
-      APP_NAME: blizu
-      DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@db:5432/blizu
-      PUBLIC_BASE_URL: https://${BLIZU_HOST:?set BLIZU_HOST in .env}
-      CORS_ORIGINS: https://${BLIZU_HOST}
-      RATE_LIMIT: ${BLIZU_RATE_LIMIT:-300/minute}
-      SEMANTIC_SEARCH: ${BLIZU_SEMANTIC_SEARCH:-false}
-      OSM_FEATURE_SOURCE: ${OSM_FEATURE_SOURCE:-auto}
-    volumes:
-      - blizu-data:/data
-
-  otporno-api:
-    <<: *api-defaults
-    build:
-      context: .
-      dockerfile: infra/python-api.Dockerfile
-      args: { APP: otporno }
-    image: datathon-2026-otporno-api:prod
-    environment:
-      <<: *api-env
-      APP_NAME: otporno
-      DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@db:5432/otporno
-      PUBLIC_BASE_URL: https://${OTPORNO_HOST:?set OTPORNO_HOST in .env}
-      CORS_ORIGINS: https://${OTPORNO_HOST}
-      RATE_LIMIT: ${OTPORNO_RATE_LIMIT:-300/minute}
-    volumes:
-      - otporno-data:/data
-
   nabavaradar-api:
-    <<: *api-defaults
     build:
       context: .
       dockerfile: infra/python-api.Dockerfile
       args: { APP: nabavaradar }
-    image: datathon-2026-nabavaradar-api:prod
+    image: birokratko-api:prod
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      <<: *api-env
+      ENV: prod
       APP_NAME: nabavaradar
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:?set CONTACT_EMAIL in .env}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      GIT_SHA: ${GIT_SHA:-unknown}
       DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@db:5432/nabavaradar
       PUBLIC_BASE_URL: https://${NABAVA_HOST:?set NABAVA_HOST in .env}
+      CORS_ORIGINS: https://${NABAVA_HOST}
+      RATE_LIMIT: ${RATE_LIMIT:-300/minute}
       SUDREG_CLIENT_ID: ${SUDREG_CLIENT_ID:-}
       SUDREG_CLIENT_SECRET: ${SUDREG_CLIENT_SECRET:-}
       SUDREG_BASE_URL: ${SUDREG_BASE_URL:-https://sudreg-data.gov.hr/api/javni}
@@ -91,20 +52,10 @@ services:
     volumes:
       - nabavaradar-data:/data
 
-  # One-shot publishers: copy the built SPA into the shared "srv" volume, then exit.
-  blizu-web:
-    build: { context: ., dockerfile: infra/web.Dockerfile, args: { APP: blizu } }
-    image: datathon-2026-blizu-web:prod
-    volumes: ['srv:/srv']
-    restart: 'no'
-  otporno-web:
-    build: { context: ., dockerfile: infra/web.Dockerfile, args: { APP: otporno } }
-    image: datathon-2026-otporno-web:prod
-    volumes: ['srv:/srv']
-    restart: 'no'
+  # One-shot publisher: copies the built SPA into the shared "srv" volume, then exits.
   nabavaradar-web:
     build: { context: ., dockerfile: infra/web.Dockerfile, args: { APP: nabavaradar } }
-    image: datathon-2026-nabavaradar-web:prod
+    image: birokratko-web:prod
     volumes: ['srv:/srv']
     restart: 'no'
 
@@ -115,8 +66,6 @@ services:
       - '443:443'
       - '443:443/udp'
     environment:
-      BLIZU_HOST: ${BLIZU_HOST:?set BLIZU_HOST in .env}
-      OTPORNO_HOST: ${OTPORNO_HOST:?set OTPORNO_HOST in .env}
       NABAVA_HOST: ${NABAVA_HOST:?set NABAVA_HOST in .env}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
@@ -124,18 +73,12 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      blizu-web: { condition: service_completed_successfully }
-      otporno-web: { condition: service_completed_successfully }
       nabavaradar-web: { condition: service_completed_successfully }
-      blizu-api: { condition: service_started }
-      otporno-api: { condition: service_started }
       nabavaradar-api: { condition: service_started }
     restart: unless-stopped
 
 volumes:
   pgdata:
-  blizu-data:
-  otporno-data:
   nabavaradar-data:
   srv:
   caddy_data:

@@ -1,50 +1,93 @@
-# datathon-2026
+# Birokratko
 
-Shared foundation for three open-data apps built for the Croatian **Datathon Portala otvorenih
-podataka 2026** (submission deadline: 9 Nov 2026):
+**Javni natječaji koji odgovaraju tvojoj djelatnosti.**
 
-| App           | Folder             |
-| ------------- | ------------------ |
-| `blizu`       | `apps/blizu`       |
-| `otporno`     | `apps/otporno`     |
-| `nabavaradar` | `apps/nabavaradar` |
+Birokratko za tvrtku (po OIB-u) rangira otvorene javne natječaje prema djelatnostima upisanima u Sudski registar i
+objašnjava zašto je svaki natječaj na popisu (sličnost opisa, CPV područje, lokacija, preostalo vrijeme), uz povijesnu
+konkurenciju. Javnom naručitelju procjenjuje koliko sposobnih dobavljača ima po županijama i kakva je konkurencija bila
+dosad, prije nego što objavi nabavu.
 
-This repository currently contains the **foundation only** (no app business logic): the Python
-package `opendata_core`, the UI package `@dt/ui`, the database/Docker/Caddy infrastructure and CI.
+- **Natjecanje:** Datathon Portala otvorenih podataka 2026., izazov **C: Gospodarstvo i učinkovito upravljanje**
+- **Aplikacija uživo:** <!-- LIVE_URL --> (vidi [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md))
+- **Licenca koda:** [EUPL-1.2](LICENSE)
 
-- Working rules for every task: [CLAUDE.md](CLAUDE.md)
-- Modules, conventions, testing, deployment: [docs/FOUNDATION.md](docs/FOUNDATION.md)
-- Decisions: [docs/adr/](docs/adr/)
+## Dokumentacija
 
-## Quick start
+| Dokument | Sadržaj |
+| --- | --- |
+| [apps/nabavaradar/docs/README.md](apps/nabavaradar/docs/README.md) | Opis aplikacije, arhitektura, izvori podataka, API, formula rangiranja, upozorenja e-poštom, ograničenja |
+| [apps/nabavaradar/docs/validation.md](apps/nabavaradar/docs/validation.md) | Validacija rangiranja na 30 009 stvarnih parova pobjednik–natječaj |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Produkcijsko postavljanje (Azure VM, Docker Compose, Caddy, cron) |
+| [docs/FOUNDATION.md](docs/FOUNDATION.md) | Zajednički paketi `opendata_core` (Python) i `@dt/ui` (React), konvencije |
+| [docs/adr/](docs/adr/) | Arhitekturne odluke (stack, pgvector, ograničenje upita, podatkovne odluke, v2) |
+| [apps/nabavaradar/data/evidence/](apps/nabavaradar/data/evidence/) | Sirovi odgovori izvora s datumom dohvata (dokazi) |
 
-Requirements: Docker, [uv](https://docs.astral.sh/uv/) (Python 3.12), Node 20 + pnpm 9, make.
+## Arhitektura ukratko
+
+```
+ Sudski registar API v3   TED Search API v3   CPV 2008 (xlsx)   CKAN registri ugovora (data.gov.hr)
+          │                       │                  │                    │
+          └──────────── ingest (Python, Typer CLI, svakodnevno cron) ─────┘
+                                  │  multilingual-e5-small embeddinzi · NKD→CPV crosswalk · statistika
+                     PostgreSQL 16 + pgvector + PostGIS
+                                  │
+                     FastAPI /api/v1 (OpenAPI na /docs)
+                                  │
+                     React SPA (Vite, TypeScript)  ◄── Caddy (HTTPS, CSP, /api proxy)
+```
+
+## Korišteni skupovi podataka
+
+| Skup podataka | Izdavatelj | Poveznica | Način pristupa |
+| --- | --- | --- | --- |
+| Sudski registar – javni servis v3 (subjekti, djelatnosti, NKD) | Ministarstvo pravosuđa, uprave i digitalne transformacije | https://sudreg-data.gov.hr/ | API (OAuth2), **testno okruženje, snimka 2024-06-16** |
+| TED – obavijesti o nadmetanju i dodjeli ugovora (naručitelji iz RH) | Ured za publikacije EU | https://ted.europa.eu/ (API `https://api.ted.europa.eu/v3/notices/search`) | API, svakodnevno |
+| CPV 2008 – Zajednički rječnik javne nabave | Ured za publikacije EU | https://ted.europa.eu/documents/d/ted/cpv_2008_xls | preuzeta službena datoteka |
+| Registri ugovora javne nabave (gradovi, općine) | razni izdavatelji na Portalu otvorenih podataka | https://data.gov.hr/ (CKAN `package_search`) | CKAN API |
+
+Svaka tablica ima zapis o izvoru i vremenu dohvata (`data_source`, `ingestion_run`); aplikacija ih prikazuje na
+stranici „Izvori podataka” (`/izvori`, `GET /api/v1/sources`). Detalji: [apps/nabavaradar/docs/README.md](apps/nabavaradar/docs/README.md#izvori).
+
+## Brzi početak (lokalno)
+
+Potrebno: Docker, [uv](https://docs.astral.sh/uv/) (Python 3.12), Node 20 + pnpm 9, make (na Windowsu iz Git Basha).
 
 ```bash
-cp .env.example .env          # set POSTGRES_PASSWORD (and CONTACT_EMAIL for external APIs)
-make dev                      # PostgreSQL 16 + PostGIS + pgvector, Mailpit (http://127.0.0.1:8025)
-
-uv sync                       # Python workspace
-pnpm install                  # web workspace
-
-make test                     # pytest (no network) + vitest
-make lint                     # ruff, mypy, eslint, prettier
-make build                    # type-check + bundle web packages
+cp .env.example .env                     # postavi POSTGRES_PASSWORD, CONTACT_EMAIL, SUDREG_* i SUBSCRIPTION_SECRET
+make dev                                 # PostgreSQL + pgvector, Mailpit (http://127.0.0.1:8025)
+uv sync && pnpm install
+make migrate
+make ingest STEP=sources && make ingest STEP=cpv && make ingest STEP=sudreg && make ingest STEP=ted && make ingest STEP=derive
+uv run --package nabavaradar-api uvicorn nabavaradar_api.main:app --port 8000
+pnpm --filter nabavaradar-web dev        # http://localhost:5173
 ```
 
-On Windows run `make` from Git Bash. Use `127.0.0.1` (not `localhost`) in `DATABASE_URL`/`SMTP_HOST`.
+Testovi: `make test` (pytest bez mreže + vitest), `make lint`, `make build`. Testovi koriste samo stvarne snimljene
+odgovore izvora (`apps/nabavaradar/api/tests/fixtures/`).
 
-## Layout
+> Node 22+ ima eksperimentalni globalni `localStorage` koji u vitestu zasjeni jsdom; projekt cilja Node 20
+> (`.nvmrc`, CI). Na novijem Nodeu pokreni testove s `NODE_OPTIONS=--no-experimental-webstorage`.
+
+## Struktura
 
 ```
-packages/core   opendata_core (config, http, provenance, ckan, geo, geocode, popgrid, optimize,
-                semantic, email, errors, health, app_factory)
-packages/ui     @dt/ui (tokens, Tailwind preset, accessible React components)
-apps/<app>/     api/ web/ data/ docs/  (filled by the app tasks)
-infra/          db image, python-api.Dockerfile, web.Dockerfile
+apps/nabavaradar/api   FastAPI + ingest CLI (paket nabavaradar_api), migracije, testovi
+apps/nabavaradar/web   React SPA
+apps/nabavaradar/data  dokazi (evidence) i lokalna predmemorija
+packages/core          opendata_core: config, HTTP s predmemorijom, provenance, CKAN, semantic, e-pošta, API tvornica
+packages/ui            @dt/ui: tokeni, Tailwind preset, pristupačne React komponente
+infra/                 slika baze, Dockerfile za API i web
 ```
 
-## Licence
+Tehnički identifikatori (`nabavaradar`) ostali su iz razvojne faze da migracije i baza rade nepromijenjeni.
 
-Source code: [EUPL-1.2](LICENSE). Data sources keep their own licences; the apps list them on the
-"Izvori podataka" page (`GET /api/v1/sources`).
+## Alati otvorenog koda i umjetne inteligencije
+
+- Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic, PostgreSQL 16, PostGIS, pgvector, sentence-transformers
+  (model `intfloat/multilingual-e5-small`, MIT), React 18, Vite, Tailwind, Caddy. Sve otvorenog koda.
+- Pri razvoju korišten je AI asistent za programiranje **Claude Code** (Anthropic); commitovi na kojima je radio
+  označeni su s `Co-Authored-By: Claude`.
+
+## Licenca
+
+Izvorni kod: [EUPL-1.2](LICENSE). Podaci zadržavaju licence svojih izdavatelja (vidi tablicu izvora iznad).

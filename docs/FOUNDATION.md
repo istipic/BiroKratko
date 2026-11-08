@@ -1,6 +1,7 @@
 # FOUNDATION
 
-Shared foundation for the three Datathon 2026 apps: **blizu**, **otporno**, **nabavaradar**.
+Shared foundation of **Birokratko** (technical name `nabavaradar`). It was written for three Datathon 2026 apps;
+this repository contains only Birokratko, so some modules (`geocode`, `popgrid`, `optimize`) are unused here.
 Read this before changing anything (see [CLAUDE.md](../CLAUDE.md) for the working rules).
 
 ## Layout
@@ -24,7 +25,7 @@ infra/          db image, python-api.Dockerfile, web.Dockerfile
 | Web package | `apps/<app>/web`, pnpm package named `<app>-web`, `build` script → `dist/`                                                                                                    |
 | Evidence    | raw probe responses with date: `apps/<app>/data/evidence/<YYYY-MM-DD>_<name>.<ext>`                                                                                           |
 | Fixtures    | `tests/fixtures/<source>/<YYYY-MM-DD>_<name>.<ext>` — REAL recorded responses only                                                                                            |
-| Database    | one PostgreSQL server, DBs `blizu`, `otporno`, `nabavaradar`; PostGIS + pg_trgm everywhere, pgvector in blizu and nabavaradar                                                 |
+| Database    | one PostgreSQL server, DB `nabavaradar`; PostGIS + pg_trgm + pgvector                                                 |
 | Tailwind    | `presets: [require('@dt/ui/tailwind-preset')]`; import `@dt/ui/styles.css`; override only `--brand-600/700`, `--accent-600`                                                   |
 | HTML        | `<html lang="hr">`, all UI text in Croatian                                                                                                                                   |
 

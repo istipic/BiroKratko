@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Build context: repository root.   docker build -f infra/python-api.Dockerfile --build-arg APP=blizu .
+# Build context: repository root.   docker build -f infra/python-api.Dockerfile --build-arg APP=nabavaradar .
 #
 # Convention for an app API (added by the app tasks): uv workspace member apps/<APP>/api with the
 # distribution name "<APP>-api", importable package "<APP>_api" and ASGI app "<APP>_api.main:app".
@@ -11,7 +11,7 @@ ENV UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 UV_PYTHON_DOWNLOADS=never
 WORKDIR /app
 
 ARG APP
-# Optional extras of the app API, e.g. --build-arg UV_SYNC_ARGS="--extra semantic" (Blizu /search model)
+# Optional extras of the app API, e.g. --build-arg UV_SYNC_ARGS="--extra semantic"
 ARG UV_SYNC_ARGS=""
 COPY pyproject.toml uv.lock README.md .python-version ./
 COPY packages/core packages/core

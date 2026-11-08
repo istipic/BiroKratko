@@ -11,7 +11,7 @@ Datathon Portala otvorenih podataka 2026., izazov C „Gospodarstvo i učinkovit
 > dokumentacija). Tehnički identifikatori ostaju `apps/nabavaradar`, paket `nabavaradar_api`, CLI `nabavaradar`,
 > baza `nabavaradar` i varijable `NABAVARADAR_*`, da migracije, `docker-compose.prod.yml` i `make APP=nabavaradar`
 > rade nepromijenjeni. Sučelje je 2026-11-04 preoblikovano u „službeni dosje” (crna traka, bordo žig, numerirane
-> kartice, ravnalo umjesto trake postotka), različito od Blizua i Otporka.
+> kartice, ravnalo umjesto trake postotka).
 
 > **Važno o podacima.** Podaci o tvrtkama iz Sudskog registra dolaze iz **testnog okruženja portala (snimka od
 > 2024-06-16)**: produkcijski pristupni podaci vraćaju HTTP 401 dok račun nije potvrđen. Aplikacija to svugdje
