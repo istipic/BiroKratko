@@ -8,7 +8,7 @@ konkurenciju. Javnom naručitelju procjenjuje koliko sposobnih dobavljača ima p
 dosad, prije nego što objavi nabavu.
 
 - **Natjecanje:** Datathon Portala otvorenih podataka 2026., izazov **C: Gospodarstvo i učinkovito upravljanje**
-- **Aplikacija uživo:** <!-- LIVE_URL --> (vidi [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md))
+- **Aplikacija uživo:** https://birokratko-hr.spaincentral.cloudapp.azure.com (Azure, vidi [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md))
 - **Licenca koda:** [EUPL-1.2](LICENSE)
 
 ## Dokumentacija
@@ -31,7 +31,7 @@ dosad, prije nego što objavi nabavu.
                                   │  multilingual-e5-small embeddinzi · NKD→CPV crosswalk · statistika
                      PostgreSQL 16 + pgvector + PostGIS
                                   │
-                     FastAPI /api/v1 (OpenAPI na /docs)
+                     FastAPI /api/v1 (OpenAPI /docs lokalno)
                                   │
                      React SPA (Vite, TypeScript)  ◄── Caddy (HTTPS, CSP, /api proxy)
 ```

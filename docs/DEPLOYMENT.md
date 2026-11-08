@@ -5,14 +5,14 @@ samo `.env`. Obrazloženje izbora: [ADR 0010](adr/0010-standalone-repository-and
 
 ## Trenutna instalacija
 
-| Stavka         | Vrijednost                                                                                                 |
-| -------------- | ---------------------------------------------------------------------------------------------------------- |
-| Adresa         | https://birokratko-hr.spaincentral.cloudapp.azure.com                                                      |
-| Platforma      | Microsoft Azure (Azure for Students), regija Spain Central                                                 |
-| Virtualni stroj | `Standard_B2as_v2` (2 vCPU, 8 GB RAM) + 4 GB swap, Ubuntu 24.04 LTS, disk 64 GB                           |
-| Resursi        | grupa `birokratko-rg`, VM `birokratko-vm`, DNS oznaka `birokratko-hr`                                      |
-| Mapa na serveru | `/opt/birokratko` (klon ovog repozitorija), tajne u `/opt/birokratko/.env` (nije u gitu, prava 600)       |
-| TLS            | Caddy automatski dohvaća i obnavlja Let's Encrypt certifikat za DNS ime                                    |
+| Stavka          | Vrijednost                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| Adresa          | https://birokratko-hr.spaincentral.cloudapp.azure.com                                               |
+| Platforma       | Microsoft Azure (Azure for Students), regija Spain Central                                          |
+| Virtualni stroj | `Standard_B2as_v2` (2 vCPU, 8 GB RAM) + 4 GB swap, Ubuntu 24.04 LTS, disk 64 GB                     |
+| Resursi         | grupa `birokratko-rg`, VM `birokratko-vm`, DNS oznaka `birokratko-hr`                               |
+| Mapa na serveru | `/opt/birokratko` (klon ovog repozitorija), tajne u `/opt/birokratko/.env` (nije u gitu, prava 600) |
+| TLS             | Caddy automatski dohvaća i obnavlja Let's Encrypt certifikat za DNS ime                             |
 
 ## Komponente (`docker-compose.prod.yml`)
 
@@ -77,6 +77,10 @@ docker compose -f docker-compose.prod.yml logs -f nabavaradar-api
 ```
 
 ## E-pošta
+
+**Trenutno stanje (2026-11-09): SMTP u produkciji nije postavljen.** Sve ostale funkcije rade; prijava na
+upozorenja vraća poruku „Slanje poruke trenutno nije moguće. Pokušajte kasnije.” (HTTP 503), a pretplata se ne
+aktivira. Kad se postave podaci za SMTP, upozorenja rade bez izmjene koda.
 
 Potvrde pretplate i upozorenja šalju se preko SMTP-a (`SMTP_HOST`, `SMTP_PORT=587` sa STARTTLS, `SMTP_USER`,
 `SMTP_PASSWORD`, `SMTP_FROM`). Lokalno se koristi Mailpit; u produkciji je potreban stvarni SMTP poslužitelj. Nakon
