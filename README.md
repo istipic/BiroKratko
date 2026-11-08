@@ -13,14 +13,14 @@ dosad, prije nego što objavi nabavu.
 
 ## Dokumentacija
 
-| Dokument | Sadržaj |
-| --- | --- |
-| [apps/nabavaradar/docs/README.md](apps/nabavaradar/docs/README.md) | Opis aplikacije, arhitektura, izvori podataka, API, formula rangiranja, upozorenja e-poštom, ograničenja |
-| [apps/nabavaradar/docs/validation.md](apps/nabavaradar/docs/validation.md) | Validacija rangiranja na 30 009 stvarnih parova pobjednik–natječaj |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Produkcijsko postavljanje (Azure VM, Docker Compose, Caddy, cron) |
-| [docs/FOUNDATION.md](docs/FOUNDATION.md) | Zajednički paketi `opendata_core` (Python) i `@dt/ui` (React), konvencije |
-| [docs/adr/](docs/adr/) | Arhitekturne odluke (stack, pgvector, ograničenje upita, podatkovne odluke, v2) |
-| [apps/nabavaradar/data/evidence/](apps/nabavaradar/data/evidence/) | Sirovi odgovori izvora s datumom dohvata (dokazi) |
+| Dokument                                                                   | Sadržaj                                                                                                  |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [apps/nabavaradar/docs/README.md](apps/nabavaradar/docs/README.md)         | Opis aplikacije, arhitektura, izvori podataka, API, formula rangiranja, upozorenja e-poštom, ograničenja |
+| [apps/nabavaradar/docs/validation.md](apps/nabavaradar/docs/validation.md) | Validacija rangiranja na 30 009 stvarnih parova pobjednik–natječaj                                       |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)                                   | Produkcijsko postavljanje (Azure VM, Docker Compose, Caddy, cron)                                        |
+| [docs/FOUNDATION.md](docs/FOUNDATION.md)                                   | Zajednički paketi `opendata_core` (Python) i `@dt/ui` (React), konvencije                                |
+| [docs/adr/](docs/adr/)                                                     | Arhitekturne odluke (stack, pgvector, ograničenje upita, podatkovne odluke, v2)                          |
+| [apps/nabavaradar/data/evidence/](apps/nabavaradar/data/evidence/)         | Sirovi odgovori izvora s datumom dohvata (dokazi)                                                        |
 
 ## Arhitektura ukratko
 
@@ -38,12 +38,12 @@ dosad, prije nego što objavi nabavu.
 
 ## Korišteni skupovi podataka
 
-| Skup podataka | Izdavatelj | Poveznica | Način pristupa |
-| --- | --- | --- | --- |
-| Sudski registar – javni servis v3 (subjekti, djelatnosti, NKD) | Ministarstvo pravosuđa, uprave i digitalne transformacije | https://sudreg-data.gov.hr/ | API (OAuth2), **testno okruženje, snimka 2024-06-16** |
-| TED – obavijesti o nadmetanju i dodjeli ugovora (naručitelji iz RH) | Ured za publikacije EU | https://ted.europa.eu/ (API `https://api.ted.europa.eu/v3/notices/search`) | API, svakodnevno |
-| CPV 2008 – Zajednički rječnik javne nabave | Ured za publikacije EU | https://ted.europa.eu/documents/d/ted/cpv_2008_xls | preuzeta službena datoteka |
-| Registri ugovora javne nabave (gradovi, općine) | razni izdavatelji na Portalu otvorenih podataka | https://data.gov.hr/ (CKAN `package_search`) | CKAN API |
+| Skup podataka                                                       | Izdavatelj                                                | Poveznica                                                                  | Način pristupa                                        |
+| ------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Sudski registar – javni servis v3 (subjekti, djelatnosti, NKD)      | Ministarstvo pravosuđa, uprave i digitalne transformacije | https://sudreg-data.gov.hr/                                                | API (OAuth2), **testno okruženje, snimka 2024-06-16** |
+| TED – obavijesti o nadmetanju i dodjeli ugovora (naručitelji iz RH) | Ured za publikacije EU                                    | https://ted.europa.eu/ (API `https://api.ted.europa.eu/v3/notices/search`) | API, svakodnevno                                      |
+| CPV 2008 – Zajednički rječnik javne nabave                          | Ured za publikacije EU                                    | https://ted.europa.eu/documents/d/ted/cpv_2008_xls                         | preuzeta službena datoteka                            |
+| Registri ugovora javne nabave (gradovi, općine)                     | razni izdavatelji na Portalu otvorenih podataka           | https://data.gov.hr/ (CKAN `package_search`)                               | CKAN API                                              |
 
 Svaka tablica ima zapis o izvoru i vremenu dohvata (`data_source`, `ingestion_run`); aplikacija ih prikazuje na
 stranici „Izvori podataka” (`/izvori`, `GET /api/v1/sources`). Detalji: [apps/nabavaradar/docs/README.md](apps/nabavaradar/docs/README.md#izvori).

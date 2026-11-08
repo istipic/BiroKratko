@@ -25,7 +25,7 @@ infra/          db image, python-api.Dockerfile, web.Dockerfile
 | Web package | `apps/<app>/web`, pnpm package named `<app>-web`, `build` script → `dist/`                                                                                                    |
 | Evidence    | raw probe responses with date: `apps/<app>/data/evidence/<YYYY-MM-DD>_<name>.<ext>`                                                                                           |
 | Fixtures    | `tests/fixtures/<source>/<YYYY-MM-DD>_<name>.<ext>` — REAL recorded responses only                                                                                            |
-| Database    | one PostgreSQL server, DB `nabavaradar`; PostGIS + pg_trgm + pgvector                                                 |
+| Database    | one PostgreSQL server, DB `nabavaradar`; PostGIS + pg_trgm + pgvector                                                                                                         |
 | Tailwind    | `presets: [require('@dt/ui/tailwind-preset')]`; import `@dt/ui/styles.css`; override only `--brand-600/700`, `--accent-600`                                                   |
 | HTML        | `<html lang="hr">`, all UI text in Croatian                                                                                                                                   |
 
