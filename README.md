@@ -85,8 +85,7 @@ Tehnički identifikatori (`nabavaradar`) ostali su iz razvojne faze da migracije
 
 - Stack: Python 3.12, FastAPI, SQLAlchemy, Alembic, PostgreSQL 16, PostGIS, pgvector, sentence-transformers
   (model `intfloat/multilingual-e5-small`, MIT), React 18, Vite, Tailwind, Caddy. Sve otvorenog koda.
-- Pri razvoju korišten je AI asistent za programiranje **Claude Code** (Anthropic); commitovi na kojima je radio
-  označeni su s `Co-Authored-By: Claude`.
+- Pri razvoju korišten je AI asistent za programiranje **Claude Code** (Anthropic).
 
 ## Licenca
 
